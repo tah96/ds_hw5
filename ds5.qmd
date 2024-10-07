@@ -3,24 +3,63 @@ title: "EDA"
 format: html
 editor: visual
 ---
+## Libraries
 
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
-
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+Before getting started lets read in the necessary libraries
 
 ```{r}
-1 + 1
+library("tidyverse")
 ```
+## Task 1: Read in & Modify
 
-You can add options to executable code like this
+Lets read in our data. The below code chunked was pulled from the `student-merge.R` file in our `files` folder and modified to reflect the folder structure of this project.
 
 ```{r}
-#| echo: false
-2 * 2
+d1=read.table("files/student-mat.csv",sep=";",header=TRUE)
+d2=read.table("files/student-por.csv",sep=";",header=TRUE)
+
+d3=merge(d1,d2,by=c("school","sex","age","address","famsize","Pstatus","Medu","Fedu","Mjob","Fjob","reason","nursery","internet"))
+d3
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+For the purpose of this homework, we want to read the data in the tidyverse way. We will use the joins provided the the source team.
+
+One thing we notice is that there are other columns outside of those in the specified join that seem to match, which could result in duplication and highly dimensional data. Some examples include *guardian, freetime, and famrel*. In addition, some variables that appear to be cateogrical and should be cast as factors are cast as **dbl** type.
+
+```{r}
+math_data <- read_delim(file="files/student-mat.csv",delim=";",show_col_types = FALSE)
+port_data <- read_delim(file="files/student-por.csv",delim=";",show_col_types = FALSE)
+merged_data <- inner_join(math_data,port_data,by=c("school","sex","age","address","famsize","Pstatus","Medu","Fedu","Mjob","Fjob","reason","nursery","internet"))
+
+merged_data
+```
+
+Lets instead merge our data on all columns besides `G1`, `G2`, `G3`, `paid`, and `absences`. We know in our `colnames` output those NOT joined will have *.x* or *.y* following them, so we can confirm the appropriate columns were not included.
+
+We also see that our tibble maintains the same # of observations
+
+```{r}
+joinCols <- colnames(math_data)[!(colnames(math_data) %in% c('G1','G2','G3','paid','absences'))]
+merged_data <- inner_join(math_data,port_data,by=joinCols)
+colnames(merged_data)
+merged_data
+```
+
+Now to pick 4 variables that we can cast as factors across our 4 data frames. I think that address, studytime, famsup and activities will be interesting to look at.
+
+To avoid repetitive code, we will write a function that takes in a vector of column names and applies to the tibbles. We'll apply that function across tibbles
+
+```{r}
+TibbleMultiFactor <- function (tibble,variables=NULL){
+  returnTibble <- tibble %>%
+      mutate(across(all_of(variables), as.factor))
+  return(returnTibble)
+}
+
+variablesToFactor <- c('address','studytime','famsup','activities')
+
+math_data <- TibbleMultiFactor(math_data,variables=variablesToFactor)
+port_data <- TibbleMultiFactor(port_data,variables=variablesToFactor)
+merged_data <- TibbleMultiFactor(merged_data,variables=variablesToFactor)
+```
+
