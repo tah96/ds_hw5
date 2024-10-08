@@ -88,7 +88,9 @@ three_way <- table(merged_data$studytime, merged_data$famsup, merged_data$activi
 paste0("This is the three-way table output")
 three_way
 ```
-Insert some text
+We can subset our data many ways to get similar results. In the `twoWayFilter` object we are using data subsetted on *famsup* = *yes* and then creating our conditional contingency table.
+
+Likewise, we are taking our `three-way` contingency table and subsetting on *famsup*=*yes*. You can see both outputs yield the same results.
 
 ```{r}
 filterData <- merged_data %>%
@@ -99,5 +101,119 @@ twoWayFilter
 
 twoWayFromThree <- three_way[,"yes",]
 twoWayFromThree
+```
+
+We can also create two way tables using `dplyr` package. You'll see we get the same datapoints (different format) as `two_way` object which was created using table().
+
+```{r}
+twoWayDplyr <- merged_data %>%
+  group_by(studytime, famsup) %>%
+  drop_na(studytime, famsup) %>%
+  summarize(count = n()) %>%
+  pivot_wider(names_from = famsup, values_from = count)
+
+twoWayDplyr
+```
+
+Lets create some visualizations to represent the output above. We are making a stacked bar chart and a side-by-side bar chart.
+
+```{r}
+catBasePlot <- ggplot(data = merged_data %>% drop_na(studytime, famsup), aes(x = studytime, fill = famsup))
+
+catStackBar <- catBasePlot +
+  geom_bar() +
+  labs(x = "Study Time", y = "# Students", title = "Number of Students by Study Time Level")
+
+catSideBySide <- catBasePlot +
+  geom_bar(position = 'dodge') +
+  labs(x = "Study Time", y = "# Students", title = "Number of Students by Study Time Level") +
+  scale_fill_discrete("Family Support")
+
+catStackBar
+catSideBySide
+  
+```
+
+## Task 2: Numeric Variables
+
+To practice with 
+
+```{r}
+ageOnly <- merged_data %>%
+  drop_na(age) %>%
+  summarize("mean" = mean(age),
+            "median" = median(age),
+            "var" = var(age),
+            "sd" = sd(age),
+            "IQR" = IQR(age)
+            )
+
+mathAbsOnly <- merged_data %>%
+  drop_na(absences.x) %>%
+  summarize("mean" = mean(absences.x),
+            "median" = median(absences.x),
+            "var" = var(absences.x),
+            "sd" = sd(absences.x),
+            "IQR" = IQR(absences.x)
+            )
+
+mathG3Only <- merged_data %>%
+  drop_na(G3.x) %>%
+  summarize("mean" = mean(G3.x),
+            "median" = median(G3.x),
+            "var" = var(G3.x),
+            "sd" = sd(G3.x),
+            "IQR" = IQR(G3.x)
+            )
+
+paste0("Below are measures of center and spread for age")
+ageOnly
+paste0("Below are measures of center and spread for math absences")
+mathAbsOnly
+paste0("Below are measures of center and spread for math final grades")
+mathG3Only
+
+
+```
+Lets fetch our measures of center and spread across math absences, math first test grade and math final grade when grouping by age
+
+```{r}
+ageGroupMetrics <- merged_data %>%
+  select(age,absences.x,G1.x,G3.x) %>%
+  group_by(age) %>%
+  drop_na(age,absences.x,G1.x,G3.x) %>%
+  summarize(across(everything(), .fns = list("mean" = mean,
+                                       "median" = median,
+                                       "var" = var,
+                                       "sd" = sd,
+                                       "IQR" = IQR), .names = "{.fn}_{.col}"))
+
+ageGroupMetrics
+```
+
+Lets fetch our measures of center and spread across math first test grade, math second test grade and math final grade when grouping by age and absences
+
+```{r}
+ageAbsGroupMetrics <- merged_data %>%
+  select(age,absences.x,G1.x,G2.x,G3.x) %>%
+  group_by(age,absences.x) %>%
+  drop_na(age,absences.x,G1.x,G2.x,G3.x) %>%
+  summarize(across(everything(), .fns = list("mean" = mean,
+                                       "median" = median,
+                                       "var" = var,
+                                       "sd" = sd,
+                                       "IQR" = IQR), .names = "{.fn}_{.col}"))
+
+ageAbsGroupMetrics
+```
+
+Of all our numeric variables, we want to see a correlation matrix for everything. Lets do this by subsetting our data and using the `cor()` function
+
+```{r}
+corrMatrix <- merged_data %>%
+  select(age,absences.x,G1.x,G2.x,G3.x,absences.y,G1.y,G2.y,G3.y) %>%
+  cor()
+
+corrMatrix
 ```
 
