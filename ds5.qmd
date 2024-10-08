@@ -3,6 +3,7 @@ title: "EDA"
 format: html
 editor: visual
 ---
+
 ## Libraries
 
 Before getting started lets read in the necessary libraries
@@ -10,6 +11,7 @@ Before getting started lets read in the necessary libraries
 ```{r}
 library("tidyverse")
 ```
+
 ## Task 1: Read in & Modify
 
 Lets read in our data. The below code chunked was pulled from the `student-merge.R` file in our `files` folder and modified to reflect the folder structure of this project.
@@ -36,7 +38,7 @@ merged_data
 
 Lets instead merge our data on all columns besides `G1`, `G2`, `G3`, `paid`, and `absences`. We know in our `colnames` output those NOT joined will have *.x* or *.y* following them, so we can confirm the appropriate columns were not included.
 
-We also see that our tibble maintains the same # of observations
+We also see that our tibble maintains the same \# of observations
 
 ```{r}
 joinCols <- colnames(math_data)[!(colnames(math_data) %in% c('G1','G2','G3','paid','absences'))]
@@ -61,5 +63,41 @@ variablesToFactor <- c('address','studytime','famsup','activities')
 math_data <- TibbleMultiFactor(math_data,variables=variablesToFactor)
 port_data <- TibbleMultiFactor(port_data,variables=variablesToFactor)
 merged_data <- TibbleMultiFactor(merged_data,variables=variablesToFactor)
+```
+
+## Task 2: Part A - Categorical Variables
+
+We will create one-way, two-way and three-way contingency tables based on our factor variables from a previous code block.
+
+Explaining a result from each table
+
+1.  157 students were in studytime category "2" (One-Way)
+2.  105 students who were in studytime category "2" had family support (Two-Way)
+3.  55 students who were in the studytime category "2" had family support but did NOT participate in extracurricular activities (Three-Way)
+
+```{r}
+one_way <- table(merged_data$studytime)
+paste0("This is the one-way table output")
+one_way
+
+two_way <- table(merged_data$studytime, merged_data$famsup)
+paste0("This is the two-way table output")
+two_way
+
+three_way <- table(merged_data$studytime, merged_data$famsup, merged_data$activities)
+paste0("This is the three-way table output")
+three_way
+```
+Insert some text
+
+```{r}
+filterData <- merged_data %>%
+  filter(famsup == "yes")
+
+twoWayFilter <- table(filterData$studytime,filterData$activities)
+twoWayFilter
+
+twoWayFromThree <- three_way[,"yes",]
+twoWayFromThree
 ```
 
