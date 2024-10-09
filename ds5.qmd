@@ -88,6 +88,7 @@ three_way <- table(merged_data$studytime, merged_data$famsup, merged_data$activi
 paste0("This is the three-way table output")
 three_way
 ```
+
 We can subset our data many ways to get similar results. In the `twoWayFilter` object we are using data subsetted on *famsup* = *yes* and then creating our conditional contingency table.
 
 Likewise, we are taking our `three-way` contingency table and subsetting on *famsup*=*yes*. You can see both outputs yield the same results.
@@ -117,6 +118,8 @@ twoWayDplyr
 
 Lets create some visualizations to represent the output above. We are making a stacked bar chart and a side-by-side bar chart.
 
+One interesting observation is it seems that, regardless of family support, most students fall within the second study level.
+
 ```{r}
 catBasePlot <- ggplot(data = merged_data %>% drop_na(studytime, famsup), aes(x = studytime, fill = famsup))
 
@@ -136,7 +139,13 @@ catSideBySide
 
 ## Task 2: Numeric Variables
 
-To practice with 
+To get some practice summarizing our numerical data, lets start with single-variable summaries. This means we aren't yet grouping our data.
+
+Looking at our output here are some facts or interesting points from our data.
+
+1.  The mean student age is ~ 16.5 with 1.3 year variance
+2.  The mean # of math absences is 5.5 while the median is 4. This suggests right skew or the presence of outliers.
+3.  Our IQR for the final math grade is 5 points
 
 ```{r}
 ageOnly <- merged_data %>%
@@ -175,7 +184,10 @@ mathG3Only
 
 
 ```
-Lets fetch our measures of center and spread across math absences, math first test grade and math final grade when grouping by age
+
+Lets fetch our measures of center and spread across math absences, math first test grade and math final grade when grouping by age.
+
+One interesting fact is our median first math test grade seems to decrease as age increases. This could mean that older students are less motivated to perform well on tests.
 
 ```{r}
 ageGroupMetrics <- merged_data %>%
@@ -191,7 +203,9 @@ ageGroupMetrics <- merged_data %>%
 ageGroupMetrics
 ```
 
-Lets fetch our measures of center and spread across math first test grade, math second test grade and math final grade when grouping by age and absences
+Lets fetch our measures of center and spread across math first test grade, math second test grade and math final grade when grouping by age and absences.
+
+One interesting point her is there seems to be one (1) 15 year old that has 26 absences! How are we inferring this? The measures of spread for math test 1 are `NA` and the mean and median values are equal.
 
 ```{r}
 ageAbsGroupMetrics <- merged_data %>%
@@ -207,7 +221,9 @@ ageAbsGroupMetrics <- merged_data %>%
 ageAbsGroupMetrics
 ```
 
-Of all our numeric variables, we want to see a correlation matrix for everything. Lets do this by subsetting our data and using the `cor()` function
+Of all our numeric variables, we want to see a correlation matrix for everything. Lets do this by subsetting our data and using the `cor()` function.
+
+One interesting fact from this table is the final math grade had a stronger positive correlation with the second grade than the first. This indicates that the relationship between the second grade and final grade is more linear relative to the first test.
 
 ```{r}
 corrMatrix <- merged_data %>%
@@ -216,4 +232,3 @@ corrMatrix <- merged_data %>%
 
 corrMatrix
 ```
-
