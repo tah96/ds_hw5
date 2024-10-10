@@ -67,6 +67,30 @@ merged_data <- TibbleMultiFactor(merged_data,variables=variablesToFactor)
 
 ## Task 2: Part A - Categorical Variables
 
+To get some practice summarizing our data, lets start checking our data types and missing values.
+
+```{r}
+str(merged_data)
+```
+
+We see that the variables we chose to recast have factors are indeed factors, and most of the numeric variables make sense. However, there are also many variables that could likely be recast as factors, because they seem to have levels or be cateogrical.
+
+Some examples are:
+
+1.  Sex (Male or Female)
+2.  Schoolsup (Yes or No)
+3.  Medu (Male education level)
+
+If we wanted to use these in the future, it may be best to cast these as factors. To save time, we will not do that in this project.
+
+Now for missing values. We see zeros everywhere, which is a good sign. Meaning there is not missing data across our attribute set.
+
+```{r}
+colSums(is.na(merged_data))
+```
+
+Now, that we've documented our missing variables (none)...
+
 We will create one-way, two-way and three-way contingency tables based on our factor variables from a previous code block.
 
 Explaining a result from each table
@@ -139,12 +163,12 @@ catSideBySide
 
 ## Task 2: Numeric Variables
 
-To get some practice summarizing our numerical data, lets start with single-variable summaries. This means we aren't yet grouping our data.
+To get some practice summarizing our numerical data lets proceed with single-variable summaries. This means we aren't yet grouping our data.
 
 Looking at our output here are some facts or interesting points from our data.
 
-1.  The mean student age is ~ 16.5 with 1.3 year variance
-2.  The mean # of math absences is 5.5 while the median is 4. This suggests right skew or the presence of outliers.
+1.  The mean student age is \~ 16.5 with 1.3 year variance
+2.  The mean \# of math absences is 5.5 while the median is 4. This suggests right skew or the presence of outliers.
 3.  Our IQR for the final math grade is 5 points
 
 ```{r}
@@ -232,22 +256,52 @@ corrMatrix <- merged_data %>%
 
 corrMatrix
 ```
+
 Create a histogram, kernel density plot, and boxplot for two of the numeric variables across one of the categorical variables (that is, create graphs that can compare the distributions across the groups on the same plot (no faceting here)). Add appropriate labels and titles.
 
-We will use age, math absences and family support.
+We will use age, math absences and family support.Please cycle through the graphs. Some observations of each are:
+
+1.  Both our histograms have a right skew. This observation makes sense as we would expect a very small amount of students to be over 18 OR have a large number of absences in math
+2.  We see what appear to be peaks and valleys in our kernel density plots. It seems this may be a limitation of smoother histograms since ages and absences only take on integer values and are not float type
+3.  The median in the boxplot for Math absences across family support appears the exact same number and similar IQRs, indicating family support may not have an impact on this metric.
 
 ```{r}
 ageMathFam <- merged_data %>%
   select(age,absences.x,famsup)
 
-ageFamSup <- ggplot(ageMathFam, aes(x = age,fill=famsup)) + 
-  geom_histogram(binwidth = 1)
+baseAge <- ggplot(ageMathFam,aes(x = age,fill=famsup))
+baseMath <- ggplot(ageMathFam,aes(x = absences.x,fill=famsup))
 
-MathFamSup <- ggplot(ageMathFam, aes(x = absences.x,fill=famsup)) + 
-  geom_histogram(binwidth = 1)
+ageFamSupHist <- baseAge + 
+  geom_histogram(binwidth = 1) +
+  labs(title = 'Histogram for age and family support', x = 'Age',y='# Students')
 
-ageFamSup
-MathFamSup
+mathFamSupHist <- baseMath + 
+  geom_histogram(binwidth = 1) +
+  labs(title = 'Histogram for math absences and family support', x = 'Math Absences',y='# Students')
+
+ageFamSupKern <- baseAge + 
+  geom_density(kernel='gaussian',alpha = 0.5)  +
+  labs(title = 'Kernal Density for age and family support', x = 'Age',y='Students Density')
+
+mathFamSupKern <- baseMath + 
+  geom_density(kernel='gaussian',alpha = 0.5)  +
+  labs(title = 'Kernal Density for math absences and family support', x = 'Math Absences',y='Students Density')
+
+ageFamSupBox <- baseAge +
+  geom_boxplot(aes(x = famsup, y = age, fill = famsup)) +
+  labs(title = 'Boxplot for age and family support', x = 'Family Support ',y='Age')
+
+mathFamSupBox <- baseMath +
+  geom_boxplot(aes(x = famsup, y = absences.x, fill = famsup)) +
+  labs(title = 'Boxplot for math absences and family support', x = 'Family Support ',y='Math Absences')
+
+ageFamSupHist
+mathFamSupHist
+ageFamSupKern
+mathFamSupKern
+ageFamSupBox
+mathFamSupBox
 
 ```
 
