@@ -8,7 +8,7 @@ editor: visual
 
 Before getting started lets read in the necessary libraries
 
-```{r}
+```{r warning=FALSE}
 library("tidyverse")
 ```
 
@@ -231,4 +231,68 @@ corrMatrix <- merged_data %>%
   cor()
 
 corrMatrix
+```
+Create a histogram, kernel density plot, and boxplot for two of the numeric variables across one of the categorical variables (that is, create graphs that can compare the distributions across the groups on the same plot (no faceting here)). Add appropriate labels and titles.
+
+We will use age, math absences and family support.
+
+```{r}
+ageMathFam <- merged_data %>%
+  select(age,absences.x,famsup)
+
+ageFamSup <- ggplot(ageMathFam, aes(x = age,fill=famsup)) + 
+  geom_histogram(binwidth = 1)
+
+MathFamSup <- ggplot(ageMathFam, aes(x = absences.x,fill=famsup)) + 
+  geom_histogram(binwidth = 1)
+
+ageFamSup
+MathFamSup
+
+```
+
+We will create two scatterplots to compare the final math grade variable (G3.x) to the second math grade (G2.x) and the first math grade (G1.x). We will jitter the points and color based on family support
+
+One interesting things about both of these plots is that there are multiple instances where the final grade is near or at 0. This could indicate a dropout or an underlying data issue.
+
+```{r}
+
+mathGradeScatter <- ggplot(merged_data %>% drop_na(G2.x, G1.x, G3.x, famsup,activities,address),
+            aes(x = G1.x, y = G3.x, color = famsup)) +
+  geom_point(position="jitter") +
+  labs(x = "Math First Grade", y= "Math Final Grade", title = "First & Final Math Grade Scatter")
+
+middleMathGradeScatter <- ggplot(merged_data %>% drop_na(G2.x, G1.x, G3.x, famsup,activities,address),
+            aes(x = G2.x, y = G3.x, color = famsup)) +
+  geom_point(position="jitter") +
+  labs(x = "Math Second Grade", y= "Math Final Grade", title = "Second & Final Math Grade Scatter")
+
+mathGradeScatter
+middleMathGradeScatter
+```
+
+Lets add faceting on the categorical variable `activities`. At a visualization level, it seems grouping by activity level seems to have little to know impact on the correlation on each of these scatter plots.
+
+```{r}
+mathGradeScatter +
+  facet_wrap(~ activities) +
+  labs(title = 'First & Final Math Grade Scatter - Extracurricular Segmentation')
+
+middleMathGradeScatter +
+  facet_wrap(~ activities) +
+  labs(title = 'Second & Final Math Grade Scatter - Extracurricular Segmentation')
+```
+
+Repeat the scatter plot step but use faceting to obtain graphs at each combination of two categorical variables. Those two are `famsup` and `address`.
+
+There are a few interesting observations here. The first is that the correlation still seems to remain consistent across groupings of family support and extracurricular activities. The second is that there are more points in the "U" (Urban) address groupings, meaning that most of the students are urban as opposed to rural. This information can obviously be found in our correlation matrix or attribute counts, but there is little meaningful insight resulting from this combination of attributes.
+
+```{r}
+mathGradeScatter +
+  facet_grid(address ~ activities) +
+  labs(title = 'First & Final Math Grade Scatter - Address Type and Extracurricular Segmentation')
+
+middleMathGradeScatter +
+  facet_wrap(address ~ activities) +
+  labs(title = 'Second & Final Math Grade Scatter - Address Type and Extracurricular Segmentation')
 ```
